@@ -23,13 +23,7 @@ import inspect
 # Groundcam Imports
 from ftplib import FTP
 import tempfile
-try:
-    import cv2
-    OpenCVAvailable = True
-    print("OpenCVAvailable is %s" % OpenCVAvailable)
-except:
-    OpenCVAvailable = False
-    print("OpenCVAvailable is %s" % OpenCVAvailable)
+import cv2
 
 
 class MinidroneSensors:
@@ -268,18 +262,15 @@ class MamboGroundcam:
         Downloads the specified picture from the Mambo and stores it into a tempfile.
 
         :param filename: the name of the file which should be downloaded ON THE MAMBO.
-        :param cv2_flag: if true this function will return a cv2 image object, if false the name of the temporary file will be returned
-        :return False if there was an error during download, if cv2 is True a cv2 frame or it just returns the file name of the temporary file
+        :param cv2_flag: ASSUMED TO BE TRUE
+        :return False if there was an error during download, otherwise a cv2 frame
         """
         self.ftp.cwd(self.MEDIA_PATH)
         try:
             self.ftp.retrbinary('RETR ' + filename,
                                 open(self.storageFile, "wb").write)  # download
-            if cv2_flag and OpenCVAvailable:
-                img = cv2.imread(self.storageFile)
-                return img
-            else:
-                return filename
+            img = cv2.imread(self.storageFile)
+            return img
         except Exception as e:
             print(e)
             return False
@@ -497,7 +488,7 @@ class Minidrone:
 
     def turn_degrees(self, degrees):
         """
-        Turn the mambo the specified number of degrees (-180, 180).  Degrees must be an integere
+        Turn the mambo the specified number of degrees (-180, 180).  Degrees must be an integer
         so it is cast to an integer here.  If you send it a float, it will be rounded according to
         the rules of int()
 
@@ -531,7 +522,7 @@ class Minidrone:
 
     def take_picture(self):
         """
-        Ask the drone to take a picture also checks how many frames are on there, if there are ore than 35 it deletes one
+        Ask the drone to take a picture also checks how many frames are on there, if there are more than 35 it deletes one
         If connected via Wifi it
         If it is connected via WiFi it also deletes all frames on the Mambo once there are more than 35,
         since after there are 40 the next ones are ignored
@@ -699,7 +690,7 @@ class Minidrone:
 
     def safe_emergency(self, timeout):
         """
-        Sends emergency stop command  until the Mambo reports it is not flying anymore
+        Sends emergency stop command until the Mambo reports it is not flying anymore
 
         :param timeout: quit trying to emergency stop if it takes more than timeout seconds
         """
