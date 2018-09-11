@@ -601,7 +601,7 @@ class Minidrone(object):
 
         if (duration is None):
             self.drone_connection.send_single_pcmd_command(
-                command_tuple, my_roll, my_pitch, my_yaw, my_vertical)
+                command_tuple, my_roll, my_pitch, my_yaw, my_vertical)  # TODO: bug! no such fn!
         else:
             self.drone_connection.send_pcmd_command(
                 command_tuple, my_roll, my_pitch, my_yaw, my_vertical, duration)

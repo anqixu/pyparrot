@@ -2,7 +2,8 @@ import untangle
 import os
 from os.path import join
 
-class DroneCommandParser:
+
+class DroneCommandParser(object):
     def __init__(self):
         # store the commandsandsensors as they are called so you don't have to parse each time
         self.command_tuple_cache = dict()
@@ -15,9 +16,9 @@ class DroneCommandParser:
         dir_path = os.path.dirname(path)
 
         self.common_commands = untangle.parse(join(dir_path, 'common.xml'))
-        self.minidrone_commands = untangle.parse(join(dir_path, 'minidrone.xml'))
+        self.minidrone_commands = untangle.parse(
+            join(dir_path, 'minidrone.xml'))
         self.ardrone3_commands = untangle.parse(join(dir_path, 'ardrone3.xml'))
-
 
     def get_command_tuple(self, project, myclass, cmd):
         """
@@ -45,19 +46,18 @@ class DroneCommandParser:
         for child in my_file.project.myclass:
             if child['name'] == myclass:
                 class_id = int(child['id'])
-                #print child['name']
+                # print child['name']
 
                 for subchild in child.cmd:
-                    #print subchild
+                    # print subchild
                     if subchild['name'] == cmd:
-                        #print subchild['name']
+                        # print subchild['name']
                         cmd_id = int(subchild['id'])
 
                         # cache the result
-                        self.command_tuple_cache[(myclass, cmd)] = (project_id, class_id, cmd_id)
+                        self.command_tuple_cache[(myclass, cmd)] = (
+                            project_id, class_id, cmd_id)
                         return (project_id, class_id, cmd_id)
-
-
 
     def get_command_tuple_with_enum(self, project, myclass, cmd, enum_name):
         """
@@ -87,12 +87,12 @@ class DroneCommandParser:
         for child in my_file.project.myclass:
             if child['name'] == myclass:
                 class_id = int(child['id'])
-                #print child['name']
+                # print child['name']
 
                 for subchild in child.cmd:
-                    #print subchild
+                    # print subchild
                     if subchild['name'] == cmd:
-                        #print subchild['name']
+                        # print subchild['name']
                         cmd_id = int(subchild['id'])
 
                         for arg_child in subchild.arg:
@@ -102,8 +102,8 @@ class DroneCommandParser:
                                         enum_id = e_idx
 
                                         # cache the result
-                                        self.command_tuple_cache[(myclass, cmd, enum_name)] = ((project_id, class_id, cmd_id), enum_id)
+                                        self.command_tuple_cache[(myclass, cmd, enum_name)] = (
+                                            (project_id, class_id, cmd_id), enum_id)
 
                                         #print  ((project_id, class_id, cmd_id), enum_id)
                                         return ((project_id, class_id, cmd_id), enum_id)
-

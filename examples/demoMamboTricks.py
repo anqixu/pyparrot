@@ -8,11 +8,11 @@ from pyparrot.Minidrone import Mambo
 
 # If you are using BLE: you will need to change this to the address of YOUR mambo
 # if you are using Wifi, this can be ignored
-mamboAddr = "e0:14:d0:63:3d:d0"
+mamboAddr = "e0:14:ef:39:3d:d1"
 
 # make my mambo object
 # remember to set True/False for the wifi depending on if you are using the wifi or the BLE to connect
-mambo = Mambo(mamboAddr, use_wifi=True)
+mambo = Mambo(mamboAddr, use_wifi=False)
 
 print("trying to connect")
 success = mambo.connect(num_retries=3)
@@ -31,7 +31,8 @@ if (success):
     if (mambo.sensors.flying_state != "emergency"):
         print("flying state is %s" % mambo.sensors.flying_state)
         print("Flying direct: going up")
-        mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=20, duration=1)
+        mambo.fly_direct(roll=0, pitch=0, yaw=0,
+                         vertical_movement=20, duration=1)
 
         print("flip left")
         print("flying state is %s" % mambo.sensors.flying_state)

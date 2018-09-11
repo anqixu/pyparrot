@@ -35,7 +35,7 @@ class mDNSListener(object):
 
 
 
-class WifiConnection:
+class WifiConnection(object):
 
     def __init__(self, drone, drone_type="Bebop2"):
         """

@@ -21,10 +21,10 @@ try:
             rospy.logdebug(print_str)
 
         elif (type is "INFO"):
-            rospy.loginfo(print_str)
+            rospy.logdebug(print_str)
 
         elif (type is "NONE" or type is "DEFAULT"):
-            rospy.loginfo(print_str)
+            rospy.logdebug(print_str)
 
 except ImportError:
     # Original implementation

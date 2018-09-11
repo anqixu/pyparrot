@@ -5,10 +5,12 @@ import time
 from pyparrot.commandsandsensors.DroneSensorParser import get_data_format_and_size
 from datetime import datetime
 
+
 class MinidroneDelegate(DefaultDelegate):
     """
     Handle BLE notififications
     """
+
     def __init__(self, handle_map, minidrone, ble_connection):
         DefaultDelegate.__init__(self)
         self.handle_map = handle_map
@@ -17,10 +19,10 @@ class MinidroneDelegate(DefaultDelegate):
         color_print("initializing notification delegate", "INFO")
 
     def handleNotification(self, cHandle, data):
-        #print "handling notificiation from channel %d" % cHandle
-        #print "handle map is %s " % self.handle_map[cHandle]
-        #print "channel map is %s " % self.minidrone.characteristic_receive_uuids[self.handle_map[cHandle]]
-        #print "data is %s " % data
+        # print "handling notificiation from channel %d" % cHandle
+        # print "handle map is %s " % self.handle_map[cHandle]
+        # print "channel map is %s " % self.minidrone.characteristic_receive_uuids[self.handle_map[cHandle]]
+        # print "data is %s " % data
 
         channel = self.ble_connection.characteristic_receive_uuids[self.handle_map[cHandle]]
 
@@ -30,11 +32,13 @@ class MinidroneDelegate(DefaultDelegate):
         if channel == 'ACK_DRONE_DATA':
             # data received from drone (needs to be ack on 1e)
             #color_print("calling update sensors ack true", "WARN")
-            self.minidrone.update_sensors(packet_type, None, packet_seq_num, raw_data, ack=True)
+            self.minidrone.update_sensors(
+                packet_type, None, packet_seq_num, raw_data, ack=True)
         elif channel == 'NO_ACK_DRONE_DATA':
             # data from drone (including battery and others), no ack
             #color_print("drone data - no ack needed")
-            self.minidrone.update_sensors(packet_type, None, packet_seq_num, raw_data, ack=False)
+            self.minidrone.update_sensors(
+                packet_type, None, packet_seq_num, raw_data, ack=False)
         elif channel == 'ACK_COMMAND_SENT':
             # ack 0b channel, SEND_WITH_ACK
             #color_print("Ack!  command received!")
@@ -42,13 +46,14 @@ class MinidroneDelegate(DefaultDelegate):
         elif channel == 'ACK_HIGH_PRIORITY':
             # ack 0c channel, SEND_HIGH_PRIORITY
             #color_print("Ack!  high priority received")
-            self.ble_connection._set_command_received('SEND_HIGH_PRIORITY', True)
+            self.ble_connection._set_command_received(
+                'SEND_HIGH_PRIORITY', True)
         else:
             color_print("unknown channel %s sending data " % channel, "ERROR")
             color_print(cHandle)
 
 
-class BLEConnection:
+class BLEConnection(object):
     def __init__(self, address, minidrone):
         """
              Initialize with its BLE address - if you don't know the address, call findMinidrone
@@ -81,7 +86,8 @@ class BLEConnection:
         # http://forum.developer.parrot.com/t/ble-characteristics-of-minidrones/5912/2
         self.characteristic_send_uuids = {
             '0a': 'SEND_NO_ACK',  # not-ack commandsandsensors (PCMD only)
-            '0b': 'SEND_WITH_ACK',  # ack commandsandsensors (all piloting commandsandsensors)
+            # ack commandsandsensors (all piloting commandsandsensors)
+            '0b': 'SEND_WITH_ACK',
             '0c': 'SEND_HIGH_PRIORITY',  # emergency commandsandsensors
             '1e': 'ACK_COMMAND'  # ack for data sent on 0e
         }
@@ -101,8 +107,10 @@ class BLEConnection:
         # the types of commandsandsensors and data coming back are also documented here
         # http://forum.developer.parrot.com/t/ble-characteristics-of-minidrones/5912/2
         self.characteristic_receive_uuids = {
-            '0e': 'ACK_DRONE_DATA',  # drone data that needs an ack (needs to be ack on 1e)
-            '0f': 'NO_ACK_DRONE_DATA',  # data from drone (including battery and others), no ack
+            # drone data that needs an ack (needs to be ack on 1e)
+            '0e': 'ACK_DRONE_DATA',
+            # data from drone (including battery and others), no ack
+            '0f': 'NO_ACK_DRONE_DATA',
             '1b': 'ACK_COMMAND_SENT',  # ack 0b channel, SEND_WITH_ACK
             '1c': 'ACK_HIGH_PRIORITY',  # ack 0c channel, SEND_HIGH_PRIORITY
         }
@@ -188,12 +196,14 @@ class BLEConnection:
         success = False
         while (try_num < num_retries and not success):
             try:
-                color_print("trying to re-connect to the minidrone at address %s" % self.address, "WARN")
+                color_print(
+                    "trying to re-connect to the minidrone at address %s" % self.address, "INFO")
                 self.drone_connection.connect(self.address, "random")
-                color_print("connected!  Asking for services and characteristics", "SUCCESS")
+                color_print(
+                    "connected!  Asking for services and characteristics", "SUCCESS")
                 success = True
             except BTLEException:
-                color_print("retrying connections", "WARN")
+                color_print("retrying connections", "INFO")
                 try_num += 1
 
         if (success):
@@ -209,9 +219,11 @@ class BLEConnection:
 
         :return: throws an error if the drone connection failed.  Returns void if nothing failed.
         """
-        color_print("trying to connect to the minidrone at address %s" % self.address, "INFO")
+        color_print("trying to connect to the minidrone at address %s" %
+                    self.address, "INFO")
         self.drone_connection.connect(self.address, "random")
-        color_print("connected!  Asking for services and characteristics", "SUCCESS")
+        color_print(
+            "connected!  Asking for services and characteristics", "SUCCESS")
 
         # re-try until all services have been found
         allServicesFound = False
@@ -236,14 +248,12 @@ class BLEConnection:
                             self.receive_characteristics[self.characteristic_receive_uuids[hex_str]] = c
                             handle_map[c.getHandle()] = hex_str
 
-
                 elif (self.service_uuids[hex_str] == 'ARCOMMAND_SENDING_SERVICE'):
                     # only store the ones used to send data
                     for c in s.getCharacteristics():
                         hex_str = self._get_byte_str_from_uuid(c.uuid, 4, 4)
                         if hex_str in self.characteristic_send_uuids:
                             self.send_characteristics[self.characteristic_send_uuids[hex_str]] = c
-
 
                 elif (self.service_uuids[hex_str] == 'UPDATE_BLE_FTP'):
                     # store the FTP info
@@ -266,7 +276,8 @@ class BLEConnection:
                 for c in s.getCharacteristics():
                     if self._get_byte_str_from_uuid(c.uuid, 3, 4) in \
                             ['fb0f', 'fb0e', 'fb1b', 'fb1c', 'fd22', 'fd23', 'fd24', 'fd52', 'fd53', 'fd54']:
-                        self.handshake_characteristics[self._get_byte_str_from_uuid(c.uuid, 3, 4)] = c
+                        self.handshake_characteristics[self._get_byte_str_from_uuid(
+                            c.uuid, 3, 4)] = c
 
             # check to see if all 8 characteristics were found
             allServicesFound = True
@@ -294,7 +305,8 @@ class BLEConnection:
         self._perform_handshake()
 
         # initialize the delegate to handle notifications
-        self.drone_connection.setDelegate(MinidroneDelegate(handle_map, self.minidrone, self))
+        self.drone_connection.setDelegate(
+            MinidroneDelegate(handle_map, self.minidrone, self))
 
     def _perform_handshake(self):
         """
@@ -305,13 +317,15 @@ class BLEConnection:
 
         :return: nothing
         """
-        color_print("magic handshake to make the drone listen to our commandsandsensors")
+        color_print(
+            "magic handshake to make the drone listen to our commandsandsensors")
 
         # Note this code snippet below more or less came from the python example posted to that forum (I adapted it to my interface)
         for c in self.handshake_characteristics.values():
             # for some reason bluepy characteristic handle is two lower than what I need...
             # Need to write 0x0100 to the characteristics value handle (which is 2 higher)
-            self.drone_connection.writeCharacteristic(c.handle + 2, struct.pack("<BB", 1, 0))
+            self.drone_connection.writeCharacteristic(
+                c.handle + 2, struct.pack("<BB", 1, 0))
 
     def disconnect(self):
         """
@@ -342,7 +356,6 @@ class BLEConnection:
         my_hex_str = uuid_str[idx_start:idx_end]
         return my_hex_str
 
-
     def send_turn_command(self, command_tuple, degrees):
         """
         Build the packet for turning and send it
@@ -351,7 +364,8 @@ class BLEConnection:
         :param degrees: how many degrees to turn
         :return: True if the command was sent and False otherwise
         """
-        self.characteristic_send_counter['SEND_WITH_ACK'] = (self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
+        self.characteristic_send_counter['SEND_WITH_ACK'] = (
+            self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
 
         packet = struct.pack("<BBBBHh", self.data_types['DATA_WITH_ACK'],
                              self.characteristic_send_counter['SEND_WITH_ACK'],
@@ -369,15 +383,14 @@ class BLEConnection:
         """
         # print command_tuple
         self.characteristic_send_counter['SEND_WITH_ACK'] = (
-                                                                self.characteristic_send_counter[
-                                                                    'SEND_WITH_ACK'] + 1) % 256
+            self.characteristic_send_counter[
+                'SEND_WITH_ACK'] + 1) % 256
         packet = struct.pack("<BBBBHB", self.data_types['DATA_WITH_ACK'],
                              self.characteristic_send_counter['SEND_WITH_ACK'],
                              command_tuple[0], command_tuple[1], command_tuple[2],
                              1)
 
         return self.send_command_packet_ack(packet)
-
 
     def send_command_packet_ack(self, packet):
         """
@@ -390,8 +403,9 @@ class BLEConnection:
         self._set_command_received('SEND_WITH_ACK', False)
         while (try_num < self.max_packet_retries and not self.command_received['SEND_WITH_ACK']):
             color_print("sending command packet on try %d" % try_num, 2)
-            self._safe_ble_write(characteristic=self.send_characteristics['SEND_WITH_ACK'], packet=packet)
-            #self.send_characteristics['SEND_WITH_ACK'].write(packet)
+            self._safe_ble_write(
+                characteristic=self.send_characteristics['SEND_WITH_ACK'], packet=packet)
+            # self.send_characteristics['SEND_WITH_ACK'].write(packet)
             try_num += 1
             color_print("sleeping for a notification", 2)
             #notify = self.drone.waitForNotifications(1.0)
@@ -415,13 +429,14 @@ class BLEConnection:
         while (time.time() - start_time < duration):
 
             self.characteristic_send_counter['SEND_NO_ACK'] = (
-                                                              self.characteristic_send_counter['SEND_NO_ACK'] + 1) % 256
+                self.characteristic_send_counter['SEND_NO_ACK'] + 1) % 256
             packet = struct.pack("<BBBBHBbbbbI", self.data_types['DATA_NO_ACK'],
                                  self.characteristic_send_counter['SEND_NO_ACK'],
                                  command_tuple[0], command_tuple[1], command_tuple[2],
                                  1, roll, pitch, yaw, vertical_movement, 0)
 
-            self._safe_ble_write(characteristic=self.send_characteristics['SEND_NO_ACK'], packet=packet)
+            self._safe_ble_write(
+                characteristic=self.send_characteristics['SEND_NO_ACK'], packet=packet)
             # self.send_characteristics['SEND_NO_ACK'].write(packet)
             notify = self.drone_connection.waitForNotifications(0.1)
 
@@ -437,12 +452,11 @@ class BLEConnection:
         :param command_tuple: 3 tuple of the command bytes.  0 padded for 4th byte
         :return: True if the command was sent and False otherwise
         """
-        self.characteristic_send_counter['SEND_WITH_ACK'] = (self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
+        self.characteristic_send_counter['SEND_WITH_ACK'] = (
+            self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
         packet = struct.pack("<BBBBH", self.data_types['DATA_WITH_ACK'], self.characteristic_send_counter['SEND_WITH_ACK'],
                              command_tuple[0], command_tuple[1], command_tuple[2])
         return self.send_command_packet_ack(packet)
-
-
 
     def send_enum_command_packet_ack(self, command_tuple, enum_value, usb_id=None):
         """
@@ -456,7 +470,8 @@ class BLEConnection:
         :param enum_value: the enum index
         :return: nothing
         """
-        self.characteristic_send_counter['SEND_WITH_ACK'] = (self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
+        self.characteristic_send_counter['SEND_WITH_ACK'] = (
+            self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
         if (usb_id is None):
             packet = struct.pack("<BBBBBBI", self.data_types['DATA_WITH_ACK'], self.characteristic_send_counter['SEND_WITH_ACK'],
                                  command_tuple[0], command_tuple[1], command_tuple[2], 0,
@@ -492,7 +507,8 @@ class BLEConnection:
             # Fetch the parameter sizes. By looping over the param_tuple we only get the data
             # for requested parameters so a mismatch in params and types does not matter
             for i, param in enumerate(param_tuple):
-                pack_char_list[i], param_size_list[i] = get_data_format_and_size(param, param_type_tuple[i])
+                pack_char_list[i], param_size_list[i] = get_data_format_and_size(
+                    param, param_type_tuple[i])
 
         if ack:
             ack_string = 'SEND_WITH_ACK'
@@ -502,7 +518,8 @@ class BLEConnection:
             data_ack_string = 'DATA_NO_ACK'
 
         # Construct the base packet
-        self.characteristic_send_counter['SEND_WITH_ACK'] = (self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
+        self.characteristic_send_counter['SEND_WITH_ACK'] = (
+            self.characteristic_send_counter['SEND_WITH_ACK'] + 1) % 256
 
         # TODO:  Amy changed this to match the BLE packet structure but needs to fully test it
         packet = struct.pack("<BBBBH", self.data_types[data_ack_string],
@@ -554,15 +571,16 @@ class BLEConnection:
         :return: nothing
         """
         #color_print("ack last packet on the ACK_COMMAND channel", "INFO")
-        self.characteristic_send_counter['ACK_COMMAND'] = (self.characteristic_send_counter['ACK_COMMAND'] + 1) % 256
+        self.characteristic_send_counter['ACK_COMMAND'] = (
+            self.characteristic_send_counter['ACK_COMMAND'] + 1) % 256
         packet = struct.pack("<BBB", self.data_types['ACK'], self.characteristic_send_counter['ACK_COMMAND'],
                              packet_id)
-        #color_print("sending packet %d %d %d" % (self.data_types['ACK'], self.characteristic_send_counter['ACK_COMMAND'],
+        # color_print("sending packet %d %d %d" % (self.data_types['ACK'], self.characteristic_send_counter['ACK_COMMAND'],
         #                                   packet_id), "INFO")
 
-        self._safe_ble_write(characteristic=self.send_characteristics['ACK_COMMAND'], packet=packet)
-        #self.send_characteristics['ACK_COMMAND'].write(packet)
-
+        self._safe_ble_write(
+            characteristic=self.send_characteristics['ACK_COMMAND'], packet=packet)
+        # self.send_characteristics['ACK_COMMAND'].write(packet)
 
     def smart_sleep(self, timeout):
         """
@@ -577,14 +595,16 @@ class BLEConnection:
 
         start_time = datetime.now()
         new_time = datetime.now()
-        diff = (new_time - start_time).seconds + ((new_time - start_time).microseconds / 1000000.0)
+        diff = (new_time - start_time).seconds + \
+            ((new_time - start_time).microseconds / 1000000.0)
 
         while (diff < timeout):
             try:
                 notify = self.drone_connection.waitForNotifications(0.1)
             except:
-                color_print("reconnecting to wait", "WARN")
+                color_print("reconnecting to wait", "INFO")
                 self._reconnect(3)
 
             new_time = datetime.now()
-            diff = (new_time - start_time).seconds + ((new_time - start_time).microseconds / 1000000.0)
+            diff = (new_time - start_time).seconds + \
+                ((new_time - start_time).microseconds / 1000000.0)
