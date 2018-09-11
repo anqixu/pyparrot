@@ -69,6 +69,7 @@ class MinidroneSensors:
 
         # this is optionally set elsewhere
         self.user_callback_function = None
+        self.user_callback_function_args = None
 
     def set_user_callback_function(self, function, args):
         """
@@ -90,7 +91,7 @@ class MinidroneSensors:
         :param sensor_enum: enum list for the sensors that use enums so that we can translate from numbers to strings
         :return:
         """
-        #print("updating sensor %s" % name)
+        # print("updating sensor %s" % name)
         # print(value)
         if (name is None):
             print("Error empty sensor")
@@ -149,7 +150,8 @@ class MinidroneSensors:
 
         # call the user callback if it isn't None
         if (self.user_callback_function is not None):
-            self.user_callback_function(self.user_callback_function_args)
+            self.user_callback_function(
+                self, name, value, self.user_callback_function_args)
 
     def get_estimated_z_orientation(self):
         """
@@ -241,7 +243,7 @@ class MamboGroundcam:
         self.imagePath = join(shortPath, "images")
         self.storageFile = join(self.imagePath, "groundcam.jpg")
         print(self.storageFile)
-        #self.storageFile = tempfile.NamedTemporaryFile()
+        # self.storageFile = tempfile.NamedTemporaryFile()
 
     def _close(self):
 
@@ -297,6 +299,7 @@ class Minidrone:
         self.use_wifi = use_wifi
         self.groundcam = None
         if (use_wifi):
+            # TODO: ability to specify drone IP, assuming many drones and ability to connect to AP instead of hosting AP
             self.drone_connection = WifiConnection(self, drone_type="Mambo")
             # initialize groundcam
             self.groundcam = MamboGroundcam()
@@ -592,7 +595,7 @@ class Minidrone:
         my_yaw = self._ensure_fly_command_in_range(yaw)
         my_vertical = self._ensure_fly_command_in_range(vertical_movement)
 
-        #print("roll is %d pitch is %d yaw is %d vertical is %d" % (my_roll, my_pitch, my_yaw, my_vertical))
+        # print("roll is %d pitch is %d yaw is %d vertical is %d" % (my_roll, my_pitch, my_yaw, my_vertical))
         command_tuple = self.command_parser.get_command_tuple(
             "minidrone", "Piloting", "PCMD")
 
