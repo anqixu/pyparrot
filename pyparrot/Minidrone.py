@@ -26,7 +26,7 @@ import tempfile
 import cv2
 
 
-class MinidroneSensors:
+class MinidroneSensors(object):
     """
     Store the minidrone's last known sensor values
     """
@@ -222,7 +222,7 @@ class MinidroneSensors:
         return my_str
 
 
-class MamboGroundcam:
+class MamboGroundcam(object):
     def __init__(self, drone_addr='192.168.99.3'):
         """
         Initialises the FTP-Session for the picture-download.
@@ -285,7 +285,7 @@ class MamboGroundcam:
         self.ftp.delete(filename)
 
 
-class Minidrone:
+class Minidrone(object):
     def __init__(self, address="", use_wifi=False):
         """
         If you need BLE: Initialize with its BLE address - if you don't know the address, call findMambo
@@ -319,7 +319,7 @@ class Minidrone:
         self.sensors = MinidroneSensors()
         self.sensor_parser = DroneSensorParser(drone_type="Minidrone")
 
-    def set_user_sensor_callback(self, function, args):
+    def set_user_sensor_callback(self, function, args=None):
         """
         Set the (optional) user callback function for sensors.  Every time a sensor
         is updated, it calls this function.
