@@ -51,6 +51,11 @@ class MinidroneSensors(object):
         self.flying_mode = "quadricopter"
         self.plane_gear_box = "gear_1"
 
+        self.pos_x = 0
+        self.pos_y = 0
+        self.pos_z = 0
+        self.pos_ts = 0
+
         # new SDK sends speed, altitude, and quaternions
         self.speed_x = 0
         self.speed_y = 0
@@ -118,6 +123,14 @@ class MinidroneSensors(object):
             self.gun_id = value
         elif (name == "GunState_state"):
             self.gun_state = value
+        elif (name == "DronePosition_posx"):
+            self.pos_x = value
+        elif (name == "DronePosition_posy"):
+            self.pos_y = value
+        elif (name == "DronePosition_posz"):
+            self.pos_z = value
+        elif (name == "DronePosition_ts"):
+            self.pos_ts = value
         elif (name == "DroneSpeed_speed_x"):
             self.speed_x = value
         elif (name == "DroneSpeed_speed_y"):

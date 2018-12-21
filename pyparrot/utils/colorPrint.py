@@ -10,6 +10,8 @@ try:
         # handle null cases
         if (print_str is None):
             print_str = ""
+        else:
+            print_str = str(print_str)
 
         if (type is "ERROR"):
             rospy.logerr(print_str)
@@ -32,6 +34,8 @@ except ImportError:
         # handle null cases
         if (print_str is None):
             print_str = ""
+        else:
+            print_str = str(print_str)
 
         if (type is "ERROR"):
             # red
